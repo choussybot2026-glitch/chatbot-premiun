@@ -1,12 +1,17 @@
-import base64
-import os
-import time
-from pathlib import Path
+# =========================================================
+# 1. IMPORTAR LAS LIBRERÍAS #
+# =========================================================
+import base64 # Sirve para convertir la imagen del logo en texto HTML
+import os # Lee la clave API KEY secreta desde el sistema
+import time # Para controlara el tiempo por si la API esta saturada
+from pathlib import Path # Maneja las rutas de carpetas de forma segura
 
-import anthropic as ant
 import streamlit as st
+from google import genai
 
-# CONFIGURACIÓN PARA NOMBRE DE LA PAGINA 
+# =========================================================
+# 2. CONFIGURACIÓN DE LA PÁGINA
+# =========================================================
 st.set_page_config(
     page_title="Choussy-bot | Colegio Fernando Llort Choussy",
     page_icon="🏫",
@@ -14,17 +19,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-BASE_DIR = Path(__file__).resolve().parent
-MODELO = "claude-sonnet-5"
-
+# Guarda la ruta de la carpeta actual donde está este archivo app.py
+BASE_DIR = Path(__file__).resolve().parent 
+MODELO = "gemini-3.7-flash"
 
 # =========================================================
-# CSS 
+# 3. MANDAR A LLAMAR AL CSS 
 # =========================================================
 def cargar_css():
     for nombre in ("style.css", "style(3).css"):
         css_path = BASE_DIR / nombre
         if css_path.exists():
+            # Lee el código CSS y lo activa dentro de la página
             st.markdown(
                 f"<style>{css_path.read_text(encoding='utf-8')}</style>",
                 unsafe_allow_html=True,
@@ -36,12 +42,13 @@ cargar_css()
 
 
 # =========================================================
-# LOGO
+# 4. CARGAR Y MOSTRAR EL ENCABEZADO CON LOGO
 # =========================================================
 def logo_data_uri():
     for nombre in ("logo_choussy-2.png", "logo.png"):
         logo_path = BASE_DIR / nombre
         if logo_path.exists():
+            # Convierte la imagen a formato de texto base64 para poder ponerla en HTML
             data = base64.b64encode(logo_path.read_bytes()).decode("utf-8")
             return f"data:image/png;base64,{data}"
     return ""
@@ -49,6 +56,7 @@ def logo_data_uri():
 
 logo_uri = logo_data_uri()
 
+# ESTRUCTURA DONDE SE MUESTRA EL LOGO Y EL NOMBRE DEL COLEGIO #
 header_html = f"""
 <div class="school-header">
     <div class="logo-box">
@@ -59,50 +67,51 @@ header_html = f"""
         }
     </div>
     <div class="school-text">
-        <div class="school-name">Colegio Fernando Llort Choussy</div>
-        <div class="bot-name">Choussy-bot</div>
+        <div class="school-name">COLEGIO FERNANDO LLORT CHOUSSY</div>
+        <div class="bot-name">CHOUSSY-BOT</div>
         <div class="bot-subtitle">Asistente virtual institucional</div>
     </div>
 </div>
 """
-
+# Dibuja la tarjeta del logo y títulos en la pantalla
 st.markdown(header_html, unsafe_allow_html=True)
 
 
 # =========================================================
-# API DE CLAUDE
+# 5. API DE GEMINI
 # =========================================================
 def obtener_api_key():
     try:
-        key = st.secrets.get("CLAUDE_API_KEY", "")
+        key = st.secrets.get("GEMINI_API_KEY", "")
         if key:
             return key
     except Exception:
         pass
 
-    return os.environ.get("CLAUDE_API_KEY", "")
+    return os.environ.get("GEMINI_API_KEY", "")
 
 
 API_KEY = obtener_api_key()
 
+# Si no hay clave detiene el chatbot #
 if not API_KEY:
     st.error(
-        "⚠️ Falta configurar CLAUDE_API_KEY. "
-        "Crea .streamlit/secrets.toml con tu clave de Claude."
+        "⚠️ Falta configurar GEMINI_API_KEY. "
+        "Crea .streamlit/secrets.toml con tu clave de Gemini."
     )
     st.stop()
 
-
+# Reutiliza la misma conexión con la IA para que el chatbot responda más rápido
 @st.cache_resource
 def obtener_cliente(api_key):
-    return ant.Anthropic(api_key=api_key)
+    return genai.Client(api_key=api_key)
 
 
 client = obtener_cliente(API_KEY)
 
 
 # =========================================================
-# MANUAL DE CONVIVENCIA
+# 6. MANUAL DE CONVIVENCIA
 # =========================================================
 manual_path = BASE_DIR / "manual_de_convivencia.pdf"
 
@@ -113,25 +122,25 @@ if not manual_path.exists():
     )
     st.stop()
 
-
+# Envía el PDF a los servidores de Gemini solo una vez (lo guarda en su memoria caché)
 @st.cache_resource
-def subir_manual_a_claude(ruta_pdf, modificacion):
+def subir_manual_a_gemini(ruta_pdf, modificacion):
     return client.files.upload(file=Path(ruta_pdf))
 
 
 try:
-    manual_claude = subir_manual_a_claude(
+    manual_gemini = subir_manual_a_gemini(
         str(manual_path),
         manual_path.stat().st_mtime,
     )
 except Exception as e:
-    st.error("❌ No se pudo subir el manual a Claude.")
+    st.error("❌ No se pudo subir el manual a Gemini.")
     st.code(str(e))
     st.stop()
 
 
 # =========================================================
-# PERSONALIDAD DEL CHATBOT Y LIMITACIONES 
+# 7. LIMITACIONES Y PERSONALIDAD DEL CHATBOT
 # =========================================================
 instrucciones_escolares = """
 Eres el Asistente Virtual Oficial del Colegio Fernando Llort Choussy.
@@ -167,23 +176,19 @@ REGLAS ESTRICTAS DE ATENCIÓN:
 
 
 # =========================================================
-# HISTORIAL
+# 8. HISTORIAL DE LA CONVERSACIÓN
 # =========================================================
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-
-# =========================================================
-# MENSAJES
-# Streamlit renderiza cada mensaje como su propio componente.
-# =========================================================
+# Muestra en la pantalla todas las preguntas y respuestas que ya se han hecho
 for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
 
 # =========================================================
-# ENTRADA
+# 9. ENTRADA DE PREGUNTAS Y GENERACIÓN DE RESPUESTA
 # =========================================================
 prompt = st.chat_input(
     "Escribe tu pregunta sobre el manual de convivencia..."
@@ -194,17 +199,21 @@ if prompt:
     with st.chat_message("user"):
         st.markdown(prompt)
 
+# Guarda la pregunta en el historial
     st.session_state.chat_history.append(
         {"role": "user", "content": prompt}
     )
 
+# Prepara la respuesta de la Inteligencia Artificial
     with st.chat_message("assistant"):
         with st.spinner("Analizando pregunta..."):
             respuesta_texto = None
             ultimo_error = None
 
+            # Obtiene los mensajes anteriores de la conversación
             previous = st.session_state.chat_history[:-1]
 
+            # Toma hasta los últimos 10 mensajes para que el chatbot recuerde el tema
             history_text = ""
             if previous:
                 history_text = "\n\n".join(
@@ -212,6 +221,7 @@ if prompt:
                     for m in previous[-10:]
                 )
 
+            # Une el historial con la pregunta actual
             if history_text:
                 prompt_completo = (
                     "Contexto de la conversación anterior:\n"
@@ -229,13 +239,14 @@ if prompt:
                     f"Pregunta: {prompt}"
                 )
 
-            for intento in range(3):
+            # Intenta comunicarse con la API de Gemini (hasta 5 veces si hay problemas de red)
+            for intento in range(5):
                 try:
                     response = client.models.generate_content(
                         model=MODELO,
                         contents=[
                             prompt_completo,
-                            manual_claude,
+                            manual_gemini,
                         ],
                         config={
                             "system_instruction": instrucciones_escolares,
@@ -244,23 +255,26 @@ if prompt:
 
                     respuesta_texto = (response.text or "").strip()
 
+                    # Si Gemini respondió detiene los reintentos
                     if respuesta_texto:
                         break
 
-                    ultimo_error = "Claude devolvió una respuesta vacía."
+                    ultimo_error = "Gemini devolvió una respuesta vacía."
 
                 except Exception as e:
                     ultimo_error = str(e)
-
+                    error_lower = ultimo_error.lower()
+                    
+                    # Si el servidor está muy saturado (errores 429 o 503), espera unos segundos
                     if (
-                        ("429" in ultimo_error or "503" in ultimo_error)
-                        and intento < 2
+                        any(key in ultimo_error for key in ["429", "503"])
+                        and intento < 4
                     ):
-                        time.sleep((intento + 1) * 2)
+                        time.sleep((intento + 1) * 4)
                         continue
 
                     break
-
+            # Si logró obtener respuesta, la muestra en la pantalla y la guarda
             if respuesta_texto:
                 st.markdown(respuesta_texto)
 
@@ -271,6 +285,7 @@ if prompt:
                     }
                 )
             else:
+                # Si ocurrió un error después de los 5 intentos, muestra la alerta
                 st.error("⚠️ Choussy-bot no pudo responder.")
                 if ultimo_error:
                     st.code(ultimo_error)
