@@ -1,5 +1,5 @@
 /* =========================================================
-   CHOUSSY-BOT — TARJETA REAL + CHAT DENTRO DE LA TARJETA
+   1. COLORES PRINCIPALES DEL COLEGIO
    ========================================================= */
 
 :root {
@@ -9,25 +9,47 @@
     --gris-barra: #9b9b9b;
 }
 
-/* Fondo */
+/* Forzar a que todo el fondo ocupe toda la altura de la pantalla */
 html, body, [data-testid="stAppViewContainer"] {
     min-height: 100%;
 }
 
+/* =========================================================
+   2. FONDO DIFUMINADO (COMPUTADORA Y PANTALLA GRANDE)
+   ========================================================= */
+@media (max-width: 1920px) {    
 .stApp {
-    min-height: 100vh;
+    /* Para poner los colores en horizontal de izquierda a derecha */
     background: linear-gradient(
         90deg,
-        var(--azul) 0%,
-        var(--azul) 47.55%,
-        var(--rojo) 47.55%,
-        var(--rojo) 77.90%,
-        var(--amarillo) 77.90%,
-        var(--amarillo) 100%
-    );
+        var(--azul) 67%,
+        var(--azul) 67%,
+        var(--rojo) 84.90%,
+        var(--rojo) 84.90%,
+        var(--amarillo) 90.7%,
+        var(--amarillo) 90.7%
+    ) !important;
+  }
 }
 
-/* Quitar encabezado de Streamlit */
+/* =========================================================
+   3. FONDO DIFUMINADO (CELULARES)
+   ========================================================= */
+@media (max-width: 500px) {
+    .stApp {
+        background: linear-gradient(
+            180deg,
+            var(--azul) 0%,
+            var(--azul) 35%,
+            var(--rojo) 67%,
+            var(--amarillo) 83%
+        ) !important;
+    }
+}
+
+/* =========================================================
+   4. OCULTAR LOS MENÚS POR DEFECTO DE STREAMLIT
+   ========================================================= */
 header[data-testid="stHeader"] {
     height: 0 !important;
     background: transparent !important;
@@ -35,30 +57,26 @@ header[data-testid="stHeader"] {
 
 #MainMenu,
 footer {
-    visibility: hidden !important;
+    visibility: hidden !important; /* Oculta el pie de página de Streamlit */
 }
 
 /* =========================================================
-   CONTENEDOR REAL DE TODA LA PÁGINA
-   =========================================================
-   La tarjeta se aplica al wrapper que contiene TODOS los
-   componentes de Streamlit. Así los chat_message también
-   quedan visualmente dentro de la tarjeta.
+   5. TARJETA PRINCIPAL (DONDE ESTÁ TODO EL CHAT)
    ========================================================= */
 
 [data-testid="stAppViewBlockContainer"] {
     box-sizing: border-box !important;
 
-    width: min(1200px, calc(100vw - 80px)) !important;
+    width: min(1200px, calc(100vw - 80px)) !important; /* Ajusta el ancho al tamaño de pantalla */
     max-width: 1200px !important;
 
-    margin: 53px auto 90px auto !important;
-    padding: 35px 55px 180px 55px !important;
+    margin: 53px auto 90px auto !important; /* Centra la tarjeta blanca en la pantalla */
+    padding: 35px 55px 180px 55px !important; /* Espacio por dentro */
 
-    background: #ffffff !important;
-    border-radius: 31px !important;
+    background: #ffffff !important; /* Fondo blanco */
+    border-radius: 31px !important; /* Bordes redondeados */
 
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important; /* Sombra suave */
 
     position: relative !important;
     z-index: 1 !important;
@@ -67,15 +85,14 @@ footer {
     overflow: visible !important;
 }
 
-/* Compatibilidad: ambos selectores deben tener el MISMO fondo.
-   En algunas versiones de Streamlit apuntan al mismo elemento. */
+/* Compatibilidad: ambos selectores deben tener el MISMO fondo.*/
 [data-testid="stMainBlockContainer"] {
     box-sizing: border-box !important;
     width: min(1200px, calc(100vw - 80px)) !important;
     max-width: 1200px !important;
     margin: 53px auto 90px auto !important;
     padding: 35px 55px 180px 55px !important;
-    background: #ffffff !important;
+    background: #ffffff !important; 
     border-radius: 31px !important;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
     position: relative !important;
@@ -84,13 +101,13 @@ footer {
 }
 
 /* =========================================================
-   CABECERA
+   6. ENCABEZADO: LOGO Y TÍTULOS (EN COMPUTADORA)
    ========================================================= */
 
 .school-header {
     position: relative;
     display: grid;
-    grid-template-columns: 225px 1fr;
+    grid-template-columns: 225px 1fr; /* Para logo a la izquierda y el texto a la derecha */
 
     width: 100%;
     min-height: 285px;
@@ -113,7 +130,7 @@ footer {
     display: block;
     width: 220px;
     height: 220px;
-    object-fit: contain;
+    object-fit: contain; /* Evita que la imagen se deforme */
 }
 
 .logo-placeholder {
@@ -182,7 +199,7 @@ footer {
 }
 
 /* =========================================================
-   CHAT
+   7. ESTILOS DE LOS MENSAJES DE RESPUESTA
    ========================================================= */
 
 /* No usamos .chat-area para envolver componentes de Streamlit */
@@ -211,14 +228,13 @@ footer {
     font-size: 17px;
 }
 
-/* Conservamos los avatares ocultos */
+/* Para tener los avatares ocultos */
 .stChatMessage [data-testid="chatAvatarIcon-user"],
 .stChatMessage [data-testid="chatAvatarIcon-assistant"] {
     display: none !important;
 }
 
-/* Espacio real al final del contenido.
-   No tapa respuestas con el input fijo. */
+/* Deja un espacio al final para que la barra de texto no tape las respuestas */
 [data-testid="stAppViewBlockContainer"]::after {
     content: "";
     display: block;
@@ -226,7 +242,7 @@ footer {
 }
 
 /* =========================================================
-   INPUT FIJO
+   8. CAMPO PARA ESCRIBIR (EN COMPUTADORA)
    ========================================================= */
 
 [data-testid="stChatInput"] {
@@ -265,9 +281,9 @@ footer {
 [data-testid="stChatInput"] textarea {
     box-sizing: border-box !important;
 
-    height: 65px !important;
-    min-height: 65px !important;
-    max-height: 65px !important;
+    height: 100px !important;
+    min-height: 100px !important;
+    max-height: 100px !important;
 
     padding: 13px 0 !important;
     margin: 0 !important;
@@ -326,14 +342,10 @@ footer {
     outline: none !important;
 }
 
-/* Alertas */
-.stAlert {
-    border-radius: 14px;
-}
 
 
 /* =========================================================
-   RESPONSIVE
+   9. AJUSTES PARA TABLETS (HASTA 1250px)
    ========================================================= */
 
 @media (max-width: 1250px) {
@@ -358,134 +370,113 @@ footer {
     }
 }
 
+/* =========================================================
+   10. AJUSTES PARA CELULARES (MANTIENE LOGO Y TEXTO A LA PAR)
+   ========================================================= */
 @media (max-width: 850px) {
     [data-testid="stAppViewBlockContainer"],
     [data-testid="stMainBlockContainer"],
     .main .block-container {
-        width: calc(100vw - 24px) !important;
+        width: calc(100vw - 16px) !important;
         background: #ffffff !important;
 
-        margin-top: 12px !important;
-        margin-bottom: 80px !important;
+        margin-top: 10px !important;
+        margin-bottom: 70px !important;
 
-        padding: 22px 20px 120px 20px !important;
-
-        border-radius: 24px !important;
+        padding: 15px 12px 100px 12px !important;
+        border-radius: 20px !important;
     }
 
+    /* Mantiene el logo a la izquierda y el texto a la derecha */
     .school-header {
-        display: block;
-        height: 360px;
-        min-height: 360px;
-        text-align: center;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: auto !important;
+        min-height: auto !important;
+        gap: 10px !important;
+        padding: 5px 0 !important;
     }
 
     .logo-box {
-        width: 100%;
-        height: 145px;
-        justify-content: center;
+        width: auto !important;
+        height: auto !important;
+        flex-shrink: 0 !important;
     }
 
     .school-logo {
-        width: 135px;
-        height: 135px;
+        width: 65px !important;
+        height: 65px !important;
     }
 
     .school-text {
-        padding: 0;
-        text-align: center;
+        padding: 0 !important;
+        text-align: left !important;
     }
 
     .school-name {
-        font-size: 31px;
-        line-height: 1.08;
-        letter-spacing: -0.8px;
-        white-space: normal;
+        font-size: 15px !important;
+        line-height: 1.1 !important;
+        letter-spacing: -0.5px !important;
+        white-space: normal !important;
     }
 
     .bot-name {
-        margin: 27px 0 0 0;
-        font-size: 46px;
-        letter-spacing: -1px;
+        margin: 2px 0 0 0 !important;
+        font-size: 24px !important;
+        letter-spacing: -0.5px !important;
     }
 
     .bot-subtitle {
-        margin: 11px 0 0 0;
-        font-size: 19px;
-        white-space: normal;
-    }
-
-    [data-testid="stChatInput"] {
-        width: calc(100vw - 38px) !important;
-        bottom: 18px !important;
-    }
-
-    [data-testid="stChatInput"] > div {
-        height: 66px !important;
-        min-height: 66px !important;
-        padding-left: 25px !important;
-        padding-right: 10px !important;
-        border-radius: 40px !important;
-    }
-
-    [data-testid="stChatInput"] textarea {
-        height: 54px !important;
-        min-height: 54px !important;
-        max-height: 54px !important;
-
-        padding: 8px 0 !important;
-
-        font-size: 17px !important;
-        line-height: 1.7 !important;
-    }
-
-    [data-testid="stChatInput"] button {
-        width: 50px !important;
-        min-width: 50px !important;
-        height: 50px !important;
-    }
-
-    [data-testid="stChatInput"] button svg {
-        width: 30px !important;
-        height: 30px !important;
+        margin: 2px 0 0 0 !important;
+        font-size: 11px !important;
+        white-space: normal !important;
     }
 }
 
-@media (max-width: 500px) {
-    .stApp {
-        background: linear-gradient(
-            180deg,
-            var(--azul) 0%,
-            var(--azul) 34%,
-            var(--rojo) 34%,
-            var(--rojo) 67%,
-            var(--amarillo) 67%,
-            var(--amarillo) 100%
-        );
-    }
+/* =========================================================
+   11. FRANJA NEGRA EN EL FONDO DEL INPUT EN CELULARES
+   ========================================================= */
+[data-testid="stChatInput"] {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    transform: none !important;
+    padding: 12px 16px 20px 16px !important;
+    background-color: #111827 !important; /* Cubre el fondo amarillo inferior */
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3) !important;
+    z-index: 9999 !important;
+}
 
-    [data-testid="stAppViewBlockContainer"],
-    [data-testid="stMainBlockContainer"],
-    .main .block-container {
-        width: calc(100vw - 14px) !important;
-        background: #ffffff !important;
-        padding-left: 15px !important;
-        padding-right: 15px !important;
-    }
+[data-testid="stChatInput"] > div {
+    width: 100% !important;
+    height: 62px !important;
+    min-height: 62px !important;
+    padding-left: 20px !important;
+    padding-right: 10px !important;
+    border-radius: 35px !important;
+    background: var(--gris-barra) !important;
+}
 
-    .school-name {
-        font-size: 27px;
-    }
+[data-testid="stChatInput"] textarea {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    padding: 10px 0 !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+}
 
-    .bot-name {
-        font-size: 41px;
-    }
+[data-testid="stChatInput"] button {
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+}
 
-    .bot-subtitle {
-        font-size: 17px;
-    }
-
-    [data-testid="stChatInput"] {
-        width: calc(100vw - 26px) !important;
-    }
+[data-testid="stChatInput"] button svg {
+    width: 26px !important;
+    height: 26px !important;
 }
