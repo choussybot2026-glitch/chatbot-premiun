@@ -55,9 +55,27 @@ header[data-testid="stHeader"] {
     background: transparent !important;
 }
 
-#MainMenu,
-footer {
-    visibility: hidden !important; /* Oculta el pie de página de Streamlit */
+/* Ocultar menú de control, encabezado y pie de página */
+#MainMenu { visibility: hidden !important; display: none !important; }
+header { visibility: hidden !important; display: none !important; }
+footer { visibility: hidden !important; display: none !important; }
+
+/* Ocultar la barra inferior de Streamlit Cloud ("Hosted with..." / "Manage app") */
+.stAppFooter, 
+.stDeployButton,
+[data-testid="stAppViewBlockContainer"] ~ div,
+div[class*="stAppFooter"],
+div[class*="viewerBadge"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Ocultar la barra de herramientas y decoración de la página */
+[data-testid="stToolbar"],
+[data-testid="stStatusWidget"],
+[data-testid="stDecoration"] {
+    display: none !important;
+    visibility: hidden !important;
 }
 
 /* =========================================================
