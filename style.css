@@ -53,6 +53,22 @@ html, body, [data-testid="stAppViewContainer"] {
 header[data-testid="stHeader"] {
     height: 0 !important;
     background: transparent !important;
+
+    /* Oculta la barra/insignia del visor de Streamlit Cloud */
+iframe[title="streamlitApp"] {
+    top: 0 !important;
+}
+
+/* Oculta el contenedor de la insignia de la plataforma */
+div[class*="viewerBadge"],
+div[class*="stAppViewerBadge"],
+[data-testid="aria-id-stAppViewerBadge"],
+a[href*="streamlit.io"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
 }
 
 /* Ocultar menú de control, encabezado y pie de página */
