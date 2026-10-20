@@ -76,6 +76,28 @@ header_html = f"""
 # Dibuja la tarjeta del logo y títulos en la pantalla
 st.markdown(header_html, unsafe_allow_html=True)
 
+st.markdown("""
+    <style>
+    /* Ocultar elementos de la interfaz dentro de la app */
+    #MainMenu { visibility: hidden !important; display: none !important; }
+    header { visibility: hidden !important; display: none !important; }
+    footer { visibility: hidden !important; display: none !important; }
+    
+    /* Ocultar la insignia flotante de la plataforma ("Hosted with Streamlit") */
+    .stAppFooter, 
+    .stDeployButton,
+    div[class*="viewerBadge"],
+    div[class*="stAppViewerBadge"],
+    [data-testid="aria-id-stAppViewerBadge"],
+    a[href*="streamlit.io"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 
 # =========================================================
 # 5. API DE GEMINI
