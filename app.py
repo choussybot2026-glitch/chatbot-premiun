@@ -3,7 +3,7 @@
 # =========================================================
 import base64 # Sirve para convertir la imagen del logo en texto HTML
 import os # Lee la clave API KEY secreta desde el sistema
-import time # Para controlara el tiempo por si la API esta saturada
+import time # Para controlar el tiempo por si la API esta saturada
 from pathlib import Path # Maneja las rutas de carpetas de forma segura
 
 import streamlit as st
@@ -18,6 +18,9 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="collapsed",
 )
+
+# Límite máximo de mensajes permitidos por sesión de usuario
+MAX_MENSAJES = 15
 
 # Guarda la ruta de la carpeta actual donde está este archivo app.py
 BASE_DIR = Path(__file__).resolve().parent 
@@ -75,28 +78,6 @@ header_html = f"""
 """
 # Dibuja la tarjeta del logo y títulos en la pantalla
 st.markdown(header_html, unsafe_allow_html=True)
-
-st.markdown("""
-    <style>
-    /* Ocultar elementos de la interfaz dentro de la app */
-    #MainMenu { visibility: hidden !important; display: none !important; }
-    header { visibility: hidden !important; display: none !important; }
-    footer { visibility: hidden !important; display: none !important; }
-    
-    /* Ocultar la insignia flotante de la plataforma ("Hosted with Streamlit") */
-    .stAppFooter, 
-    .stDeployButton,
-    div[class*="viewerBadge"],
-    div[class*="stAppViewerBadge"],
-    [data-testid="aria-id-stAppViewerBadge"],
-    a[href*="streamlit.io"] {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
 
 
 # =========================================================
@@ -186,7 +167,7 @@ REGLAS ESTRICTAS DE ATENCIÓN:
 
 5. Si no sabes la respuesta o no está en el reglamento, di de forma cordial:
    "Lamentablemente no encuentro esa norma en el reglamento vigente.
-   Le sugerimos consultar directamente con la secretaría de la institución."
+   Le sugerimos consultar directamente with la secretaría de la institución."
 
 6. No inventes artículos, sanciones, horarios, teléfonos, nombres ni
    procedimientos que no aparezcan en el documento.
@@ -198,10 +179,14 @@ REGLAS ESTRICTAS DE ATENCIÓN:
 
 
 # =========================================================
-# 8. HISTORIAL DE LA CONVERSACIÓN
+# 8. HISTORIAL Y CONTROL DE CONSUMO DE LA CONVERSACIÓN
 # =========================================================
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
+
+# Inicializa el contador de preguntas enviadas
+if "user_prompt_count" not in st.session_state:
+    st.session_state.user_prompt_count = 0
 
 # Muestra en la pantalla todas las preguntas y respuestas que ya se han hecho
 for message in st.session_state.chat_history:
@@ -210,104 +195,112 @@ for message in st.session_state.chat_history:
 
 
 # =========================================================
-# 9. ENTRADA DE PREGUNTAS Y GENERACIÓN DE RESPUESTA
+# 9. ENTRADA Y LIMITE DE PREGUNTAS DEL USUARIO 
 # =========================================================
-prompt = st.chat_input(
-    "Escribe tu pregunta sobre el manual de convivencia..."
-)
 
-
-if prompt:
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-# Guarda la pregunta en el historial
-    st.session_state.chat_history.append(
-        {"role": "user", "content": prompt}
+# Verifica si el usuario ya superó el límite de preguntas antes de mostrar el input
+if st.session_state.user_prompt_count >= MAX_MENSAJES:
+    st.warning(
+        f"⚠️ Has alcanzado el límite de {MAX_MENSAJES} preguntas por sesión. "
+        "Si tienes más dudas, por favor contacta directamente a la institución o recarga la página."
     )
+else:
+    prompt = st.chat_input("Escribe tu pregunta sobre el manual de convivencia...")
 
-# Prepara la respuesta de la Inteligencia Artificial
-    with st.chat_message("assistant"):
-        with st.spinner("Analizando pregunta..."):
-            respuesta_texto = None
-            ultimo_error = None
+    if prompt:
+        # Incrementa el contador de consumo de la sesión
+        st.session_state.user_prompt_count += 1
 
-            # Obtiene los mensajes anteriores de la conversación
-            previous = st.session_state.chat_history[:-1]
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-            # Toma hasta los últimos 10 mensajes para que el chatbot recuerde el tema
-            history_text = ""
-            if previous:
-                history_text = "\n\n".join(
-                    f"{m['role'].upper()}: {m['content']}"
-                    for m in previous[-10:]
-                )
+        # Guarda la pregunta en el historial
+        st.session_state.chat_history.append(
+            {"role": "user", "content": prompt}
+        )
 
-            # Une el historial con la pregunta actual
-            if history_text:
-                prompt_completo = (
-                    "Contexto de la conversación anterior:\n"
-                    f"{history_text}\n\n"
-                    "Responde la pregunta actual usando ÚNICAMENTE "
-                    "el manual de convivencia proporcionado. "
-                    "La conversación anterior sirve solo para entender "
-                    "referencias; las normas deben salir del PDF.\n\n"
-                    f"Pregunta actual: {prompt}"
-                )
-            else:
-                prompt_completo = (
-                    "Responde la siguiente pregunta usando ÚNICAMENTE "
-                    "el manual de convivencia proporcionado.\n\n"
-                    f"Pregunta: {prompt}"
-                )
+        # Prepara la respuesta de la Inteligencia Artificial
+        with st.chat_message("assistant"):
+            with st.spinner("Analizando pregunta..."):
+                respuesta_texto = None
+                ultimo_error = None
 
-            # Intenta comunicarse con la API de Gemini (hasta 5 veces si hay problemas de red)
-            for intento in range(5):
-                try:
-                    response = client.models.generate_content(
-                        model=MODELO,
-                        contents=[
-                            prompt_completo,
-                            manual_gemini,
-                        ],
-                        config={
-                            "system_instruction": instrucciones_escolares,
-                        },
+                # Obtiene los mensajes anteriores de la conversación
+                previous = st.session_state.chat_history[:-1]
+
+                # Toma hasta los últimos 10 mensajes para que el chatbot recuerde el tema
+                history_text = ""
+                if previous:
+                    history_text = "\n\n".join(
+                        f"{m['role'].upper()}: {m['content']}"
+                        for m in previous[-10:]
                     )
 
-                    respuesta_texto = (response.text or "").strip()
+                # Une el historial con la pregunta actual
+                if history_text:
+                    prompt_completo = (
+                        "Contexto de la conversación anterior:\n"
+                        f"{history_text}\n\n"
+                        "Responde la pregunta actual usando ÚNICAMENTE "
+                        "el manual de convivencia proporcionado. "
+                        "La conversación anterior sirve solo para entender "
+                        "referencias; las normas deben salir del PDF.\n\n"
+                        f"Pregunta actual: {prompt}"
+                    )
+                else:
+                    prompt_completo = (
+                        "Responde la siguiente pregunta usando ÚNICAMENTE "
+                        "el manual de convivencia proporcionado.\n\n"
+                        f"Pregunta: {prompt}"
+                    )
 
-                    # Si Gemini respondió detiene los reintentos
-                    if respuesta_texto:
+                # Intenta comunicarse con la API de Gemini (hasta 5 veces si hay problemas de red)
+                for intento in range(5):
+                    try:
+                        response = client.models.generate_content(
+                            model=MODELO,
+                            contents=[
+                                prompt_completo,
+                                manual_gemini,
+                            ],
+                            config={
+                                "system_instruction": instrucciones_escolares,
+                            },
+                        )
+
+                        respuesta_texto = (response.text or "").strip()
+
+                        # Si Gemini respondió detiene los reintentos
+                        if respuesta_texto:
+                            break
+
+                        ultimo_error = "Gemini devolvió una respuesta vacía."
+
+                    except Exception as e:
+                        ultimo_error = str(e)
+                        
+                        # Si el servidor está muy saturado (errores 429 o 503), espera unos segundos
+                        if (
+                            any(key in ultimo_error for key in ["429", "503"])
+                            and intento < 4
+                        ):
+                            time.sleep((intento + 1) * 4)
+                            continue
+
                         break
 
-                    ultimo_error = "Gemini devolvió una respuesta vacía."
+                # Si logró obtener respuesta, la muestra en la pantalla y la guarda
+                if respuesta_texto:
+                    st.markdown(respuesta_texto)
 
-                except Exception as e:
-                    ultimo_error = str(e)
-                    error_lower = ultimo_error.lower()
-                    
-                    # Si el servidor está muy saturado (errores 429 o 503), espera unos segundos
-                    if (
-                        any(key in ultimo_error for key in ["429", "503"])
-                        and intento < 4
-                    ):
-                        time.sleep((intento + 1) * 4)
-                        continue
-
-                    break
-            # Si logró obtener respuesta, la muestra en la pantalla y la guarda
-            if respuesta_texto:
-                st.markdown(respuesta_texto)
-
-                st.session_state.chat_history.append(
-                    {
-                        "role": "assistant",
-                        "content": respuesta_texto,
-                    }
-                )
-            else:
-                # Si ocurrió un error después de los 5 intentos, muestra la alerta
-                st.error("⚠️ Choussy-bot no pudo responder.")
-                if ultimo_error:
-                    st.code(ultimo_error)
+                    st.session_state.chat_history.append(
+                        {
+                            "role": "assistant",
+                            "content": respuesta_texto,
+                        }
+                    )
+                else:
+                    # Si ocurrió un error después de los 5 intentos, muestra la alerta
+                    st.error("⚠️ Choussy-bot no pudo responder.")
+                    if ultimo_error:
+                        st.code(ultimo_error)
