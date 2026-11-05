@@ -504,6 +504,14 @@ div[class*="viewerBadge"] {
     border-radius: 14px;
 }
 
-.stAlert p, .stAlert span, .stAlert div {
+.stAlert p {
     color: #111111 !important;
+}
+
+.stAlert span {
+    color:#e3ba20 !important;
+}
+
+.stAlert div {
+    color:#b30000 !important;
 }
