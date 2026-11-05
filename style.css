@@ -499,7 +499,7 @@ div[class*="viewerBadge"] {
     height: 26px !important;
 }
 
-/* Alertas de error o advertencia */
-.stAlert {
-    border-radius: 14px;
+/* Forzar que el texto dentro de las alertas de Streamlit sea oscuro y legible */
+.stAlert p, .stAlert span, .stAlert div {
+    color: #111111 !important;
 }
