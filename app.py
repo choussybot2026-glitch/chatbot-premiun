@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # Límite máximo de mensajes permitidos por sesión de usuario
-MAX_MENSAJES = 15
+MAX_MENSAJES = 5
 
 # Guarda la ruta de la carpeta actual donde está este archivo app.py
 BASE_DIR = Path(__file__).resolve().parent 
@@ -167,7 +167,7 @@ REGLAS ESTRICTAS DE ATENCIÓN:
 
 5. Si no sabes la respuesta o no está en el reglamento, di de forma cordial:
    "Lamentablemente no encuentro esa norma en el reglamento vigente.
-   Le sugerimos consultar directamente with la secretaría de la institución."
+   Le sugerimos consultar directamente con la secretaría de la institución."
 
 6. No inventes artículos, sanciones, horarios, teléfonos, nombres ni
    procedimientos que no aparezcan en el documento.
@@ -228,12 +228,12 @@ else:
                 # Obtiene los mensajes anteriores de la conversación
                 previous = st.session_state.chat_history[:-1]
 
-                # Toma hasta los últimos 10 mensajes para que el chatbot recuerde el tema
+                # Toma hasta los últimos 5 mensajes para que el chatbot recuerde el tema
                 history_text = ""
                 if previous:
                     history_text = "\n\n".join(
                         f"{m['role'].upper()}: {m['content']}"
-                        for m in previous[-10:]
+                        for m in previous[-5:]
                     )
 
                 # Une el historial con la pregunta actual
