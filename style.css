@@ -498,3 +498,12 @@ div[class*="viewerBadge"] {
     width: 26px !important;
     height: 26px !important;
 }
+
+/* Alertas de error con texto oscuro y visible */
+.stAlert {
+    border-radius: 14px;
+}
+
+.stAlert p, .stAlert span, .stAlert div {
+    color: #111111 !important;
+}
