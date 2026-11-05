@@ -417,6 +417,51 @@ div[class*="viewerBadge"] {
         padding: 5px 0 !important;
     }
 
+    /* Barra de chat flotante y compacta para celulares */
+[data-testid="stChatInput"] {
+    position: fixed !important;
+    bottom: 12px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100vw - 20px) !important;
+    max-width: 750px !important;
+    padding: 6px 10px !important;
+    background-color: #111827 !important;
+    border-radius: 30px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+    z-index: 9999 !important;
+}
+
+[data-testid="stChatInput"] > div {
+    width: 100% !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding-left: 15px !important;
+    padding-right: 6px !important;
+    border-radius: 24px !important;
+    background: var(--gris-barra) !important;
+}
+
+[data-testid="stChatInput"] textarea {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 6px 0 !important;
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+}
+
+[data-testid="stChatInput"] button {
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+}
+
+[data-testid="stChatInput"] button svg {
+    width: 20px !important;
+    height: 20px !important;
+}
+
     .logo-box {
         width: auto !important;
         height: auto !important;
